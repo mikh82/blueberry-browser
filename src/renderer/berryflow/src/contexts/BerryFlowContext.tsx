@@ -1,9 +1,17 @@
-import React, { createContext, useContext } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import type {
   BerryFlowTemplate,
   BerryFlowWorkflow,
   WorkflowExecution,
 } from "../types/workflow";
+import { mockTemplates } from "../mocks/templates";
 
 interface BerryFlowContextType {
   templates: BerryFlowTemplate[];
@@ -35,4 +43,47 @@ export const useBerryFLow = (): BerryFlowContextType => {
   }
 
   return context;
+};
+
+export const BerryFlowProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [templates] = useState<BerryFlowTemplate[]>(mockTemplates);
+  const [customWorkflows, setCustomWorkflows] = useState<BerryFlowWorkflow[]>(
+    []
+  );
+  const [currentWorkflow, setCurrentWorkflow] =
+    useState<BerryFlowWorkflow | null>(null);
+  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<BerryFlowTemplate | null>(null);
+  const [currentExecution, setCurrentExecution] =
+    useState<WorkflowExecution | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("berryflow-workflows");
+      if (saved) {
+        setCustomWorkflows(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error("Failed to load saved workflows:", error);
+    }
+  }, []);
+
+  const openBuilder = useCallback((template?: BerryFlowTemplate) => {
+    setIsBuilderOpen(true);
+    if (template) {
+      setSelectedTemplate(template);
+    }
+  }, []);
+
+  const closeBuilder = useCallback(() => {
+    setIsBuilderOpen(false);
+    setSelectedTemplate(null);
+    setCurrentWorkflow(null);
+  }, []);
+
+  return <BerryFlowContext.Provider>{children}</BerryFlowContext.Provider>;
 };
