@@ -19,3 +19,10 @@ export interface NodeConfig {
         defaultValue?: any
     }
 }
+
+export interface BerryFlowEdge {
+    id: string
+    source: string
+    target: string
+    type?: string
+}
