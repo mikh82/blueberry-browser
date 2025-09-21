@@ -5,7 +5,7 @@ export interface BerryFlowNode {
   description?: string;
   icon: string; // Lets use maybe emoji for now. Later can use Lucide or something similar
   position: { x: number; y: number };
-  data: Record<string, string>;
+  data: Record<string, any>;
   status: "idle" | "running" | "success" | "error";
   config?: NodeConfig;
 }
