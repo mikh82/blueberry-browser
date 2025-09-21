@@ -7,5 +7,15 @@ export interface BerryFlowNode {
   position: {x: number; y: number}
   data: Record<string, string>
   status: 'idle' | 'running' | 'success' | 'error'
-//   config?: NodeConfig
+  config?: NodeConfig
+}
+
+export interface NodeConfig {
+    [key: string]: {
+        type: 'text' | 'select' | 'number' | 'textarea'
+        label: string
+        required?: boolean
+        options?: string[]
+        defaultValue?: any
+    }
 }
