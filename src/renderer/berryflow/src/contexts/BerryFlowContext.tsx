@@ -1,4 +1,4 @@
-import React, { createContext } from "react";
+import React, { createContext, useContext } from "react";
 import type {
   BerryFlowTemplate,
   BerryFlowWorkflow,
@@ -26,3 +26,13 @@ interface BerryFlowContextType {
 }
 
 const BerryFlowContext = createContext<BerryFlowContextType | null>(null);
+
+export const useBerryFLow = (): BerryFlowContextType => {
+  const context = useContext(BerryFlowContext);
+
+  if (!context) {
+    throw new Error("useBerryFlow must be used within a BerryFlowProvidewr");
+  }
+
+  return context;
+};
