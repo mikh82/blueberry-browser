@@ -26,3 +26,15 @@ export interface BerryFlowEdge {
     target: string
     type?: string
 }
+
+export interface BerryFlowTemplate {
+    id: string
+    name: string
+    description: string
+    icon: string
+    category: 'research' | 'content' | 'data' | 'social' | 'productivity'
+    nodes: BerryFlowNode[]
+    edges: BerryFlowEdge[]
+    tags: string[]
+    esitmatedTime: string
+}
