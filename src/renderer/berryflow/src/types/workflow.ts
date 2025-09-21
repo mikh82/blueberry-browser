@@ -38,3 +38,9 @@ export interface BerryFlowTemplate {
     tags: string[]
     esitmatedTime: string
 }
+
+export interface BerryFlowWorkflow extends BerryFlowTemplate {
+    isCustom: boolean
+    createdAt: string
+    lastModified: string
+}
