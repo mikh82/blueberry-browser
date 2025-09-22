@@ -29,7 +29,7 @@ export const BerryFlowContext = createContext<BerryFlowContextType | null>(
   null
 );
 
-export const useBerryFLow = (): BerryFlowContextType => {
+export const useBerryFlow = (): BerryFlowContextType => {
   const context = useContext(BerryFlowContext);
 
   if (!context) {
