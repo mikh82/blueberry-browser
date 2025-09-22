@@ -85,5 +85,46 @@ export const BerryFlowProvider: React.FC<{ children: ReactNode }> = ({
     setCurrentWorkflow(null);
   }, []);
 
+  const selectTemplate = useCallback((template: BerryFlowTemplate) => {
+    setSelectedTemplate(template);
+    const workflow: BerryFlowWorkflow = {
+      ...template,
+      isCustom: false,
+      createdAt: new Date().toISOString(),
+      lastModified: new Date().toISOString(),
+    };
+    setCurrentWorkflow(workflow);
+  }, []);
+
+  const saveWorkflow = useCallback(
+    (workflow: BerryFlowWorkflow) => {
+      const updated = [...customWorkflows];
+      const existingIndex = updated.findIndex((w) => w.id === workflow.id);
+
+      if (existingIndex >= 0) {
+        updated[existingIndex] = {
+          ...workflow,
+          createdAt: new Date().toISOString(),
+          lastModified: new Date().toISOString(),
+        };
+      } else {
+        updated.push({
+          ...workflow,
+          createdAt: new Date().toISOString(),
+          lastModified: new Date().toISOString(),
+        });
+      }
+
+      setCustomWorkflows(updated);
+
+      try {
+        localStorage.setItem("berryflow-workflows", JSON.stringify(updated));
+      } catch (error) {
+        console.error("failed to save workflows: ", error);
+      }
+    },
+    [customWorkflows]
+  );
+
   return <BerryFlowContext.Provider>{children}</BerryFlowContext.Provider>;
 };
