@@ -88,4 +88,5 @@ export interface WorkflowExecution {
   currentNodeId?: string;
   results: Record<string, any>; // TODO: CHANGE ANY TYPE
   errors: Array<WorkflowExecutionError>;
+  startTime: string;
 }

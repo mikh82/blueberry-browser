@@ -140,5 +140,63 @@ export const BerryFlowProvider: React.FC<{ children: ReactNode }> = ({
     [templates, customWorkflows, selectTemplate]
   );
 
-  return <BerryFlowContext.Provider>{children}</BerryFlowContext.Provider>;
+  const executeWorkflow = useCallback(async (workflow: BerryFlowWorkflow) => {
+    setIsLoading(true);
+
+    // NOTE: Mock execution for now
+    const execution: WorkflowExecution = {
+      id: `exec-${Date.now()}`,
+      workflowId: workflow.id,
+      status: "running",
+      progress: 0,
+      results: {},
+      errors: [],
+      startTime: new Date().toISOString(),
+    };
+
+    setCurrentExecution(execution);
+
+    // NOTE: Mock execution (change later)
+    for (let i = 0; i <= 100; i += 20) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setCurrentExecution((prev) => (prev ? { ...prev, progress: i } : null));
+    }
+
+    setCurrentExecution((prev) =>
+      prev
+        ? {
+            ...prev,
+            status: "completed",
+            progress: 100,
+            endTime: new Date().toISOString(),
+          }
+        : null
+    );
+
+    setIsLoading(false);
+
+    setTimeout(() => setCurrentExecution(null), 3000);
+  }, []);
+
+  const value: BerryFlowContextType = {
+    templates,
+    customWorkflows,
+    currentWorkflow,
+    isBuilderOpen,
+    selectedTemplate,
+    currentExecution,
+    openBuilder,
+    closeBuilder,
+    selectTemplate,
+    saveWorkflow,
+    loadWorkflow,
+    executeWorkflow,
+    isLoading,
+  };
+
+  return (
+    <BerryFlowContext.Provider value={value}>
+      {children}
+    </BerryFlowContext.Provider>
+  );
 };
