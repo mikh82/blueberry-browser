@@ -126,5 +126,19 @@ export const BerryFlowProvider: React.FC<{ children: ReactNode }> = ({
     [customWorkflows]
   );
 
+  const loadWorkflow = useCallback(
+    (workflowId: string) => {
+      const template = templates.find((t) => t.id === workflowId);
+      const custom = customWorkflows.find((w) => w.id === workflowId);
+
+      if (template) {
+        selectTemplate(template);
+      } else if (custom) {
+        setCurrentWorkflow(custom);
+      }
+    },
+    [templates, customWorkflows, selectTemplate]
+  );
+
   return <BerryFlowContext.Provider>{children}</BerryFlowContext.Provider>;
 };
