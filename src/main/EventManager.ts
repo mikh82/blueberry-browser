@@ -24,6 +24,9 @@ export class EventManager {
 
     // Debug events
     this.handleDebugEvents();
+
+    // BerryFlow events
+    this.handleBerryFlowEvents();
   }
 
   private handleTabEvents(): void {
@@ -244,6 +247,70 @@ export class EventManager {
     this.mainWindow.allTabs.forEach((tab) => {
       if (tab.webContents !== sender) {
         tab.webContents.send("dark-mode-updated", isDarkMode);
+      }
+    });
+  }
+
+  private handleBerryFlowEvents(): void {
+    ipcMain.handle("toggle-berryflow", () => {
+      this.mainWindow.berryFlow.toggle();
+      return true;
+    });
+
+    ipcMain.handle("berryflow-get-templates", () => {
+      return [];
+    });
+
+    ipcMain.handle("berryflow-save-workflow", (_, workflow) => {
+      console.log("Saving workflow:", workflow.name);
+      return true;
+    });
+
+    ipcMain.handle("berryflow-execute-workflow", async (_, workflow) => {
+      console.log("Executing workflow:", workflow.name);
+      const executionId = `exec-${Date.now()}`;
+
+      setTimeout(() => {
+        this.mainWindow.berryFlow.view.webContents.send(
+          "berryflow-execution-update",
+          {
+            executionId,
+            progress: 50,
+            status: "running",
+          }
+        );
+      }, 1000);
+
+      setTimeout(() => {
+        this.mainWindow.berryFlow.view.webContents.send(
+          "berryflow-execution-update",
+          {
+            executionId,
+            progress: 100,
+            status: "completed",
+          }
+        );
+      }, 3000);
+
+      return executionId;
+    });
+
+    ipcMain.handle("berryflow-mcp-call", async (_, functionName, params) => {
+      console.log("MCP call:", functionName, params);
+
+      // Mock responses
+      switch (functionName) {
+        case "fetchTrends":
+          return {
+            trends: ["AI browsers trending up", "Privacy features in demand"],
+          };
+        case "aggregateData":
+          return {
+            summary:
+              "Aggregated data from " + params.sources?.length + " sources",
+          };
+        default:
+          return { result: "Mock MCP response for " + functionName };
       }
     });
   }
