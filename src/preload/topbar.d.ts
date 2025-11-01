@@ -28,6 +28,7 @@ interface TopBarAPI {
 
   // Sidebar
   toggleSidebar: () => Promise<void>;
+  toggleBerryFlow: () => Promise<boolean>;
 }
 
 declare global {
@@ -36,4 +37,3 @@ declare global {
     topBarAPI: TopBarAPI;
   }
 }
-

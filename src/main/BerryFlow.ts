@@ -1,45 +1,37 @@
 import { is } from "@electron-toolkit/utils";
 import { BaseWindow, WebContentsView } from "electron";
 import { join } from "path";
-import { LLMClient } from "./LLMClient";
 
-export class SideBar {
+export class BerryFlow {
   private webContentsView: WebContentsView;
   private baseWindow: BaseWindow;
-  private llmClient: LLMClient;
   private isVisible: boolean = false;
 
   constructor(baseWindow: BaseWindow) {
     this.baseWindow = baseWindow;
     this.webContentsView = this.createWebContentsView();
-    baseWindow.contentView.addChildView(this.webContentsView);
     this.setupBounds();
-
-    // Initialize LLM client
-    this.llmClient = new LLMClient(this.webContentsView.webContents);
   }
 
   private createWebContentsView(): WebContentsView {
     const webContentsView = new WebContentsView({
       webPreferences: {
-        preload: join(__dirname, "../preload/sidebar.js"),
+        preload: join(__dirname, "../preload/berryflow.js"),
         nodeIntegration: false,
         contextIsolation: true,
-        sandbox: false, // Need to disable sandbox for preload to work
+        sandbox: false,
       },
     });
 
-    // Load the Sidebar React app
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
-      // In development, load through Vite dev server
-      const sidebarUrl = new URL(
-        "/sidebar/",
+      const berryflowUrl = new URL(
+        "/berryflow/",
         process.env["ELECTRON_RENDERER_URL"]
       );
-      webContentsView.webContents.loadURL(sidebarUrl.toString());
+      webContentsView.webContents.loadURL(berryflowUrl.toString());
     } else {
       webContentsView.webContents.loadFile(
-        join(__dirname, "../renderer/sidebar.html")
+        join(__dirname, "../renderer/berryflow.html")
       );
     }
 
@@ -51,24 +43,16 @@ export class SideBar {
 
     const bounds = this.baseWindow.getBounds();
     this.webContentsView.setBounds({
-      x: bounds.width - 400, // 400px width sidebar on the right
-      y: 88, // Start below the topbar
-      width: 400,
-      height: bounds.height - 88, // Subtract topbar height
+      x: 0,
+      y: 88,
+      width: bounds.width,
+      height: bounds.height - 88,
     });
   }
 
   updateBounds(): void {
     if (this.isVisible) {
       this.setupBounds();
-    } else {
-      // Hide the sidebar
-      this.webContentsView.setBounds({
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-      });
     }
   }
 
@@ -76,23 +60,22 @@ export class SideBar {
     return this.webContentsView;
   }
 
-  get client(): LLMClient {
-    return this.llmClient;
-  }
-
   show(): void {
-    this.isVisible = true;
-    this.setupBounds();
+    if (!this.isVisible) {
+      this.baseWindow.contentView.addChildView(this.webContentsView);
+      this.isVisible = true;
+      this.setupBounds();
+      this.webContentsView.setVisible(true);
+      this.webContentsView.webContents.send("berryflow-opened");
+    }
   }
 
   hide(): void {
-    this.isVisible = false;
-    this.webContentsView.setBounds({
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
-    });
+    if (this.isVisible) {
+      this.baseWindow.contentView.removeChildView(this.webContentsView);
+      this.isVisible = false;
+      this.webContentsView.webContents.send("berryflow-closed");
+    }
   }
 
   toggle(): void {

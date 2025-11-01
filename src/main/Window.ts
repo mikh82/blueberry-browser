@@ -2,6 +2,7 @@ import { BaseWindow, shell } from "electron";
 import { Tab } from "./Tab";
 import { TopBar } from "./TopBar";
 import { SideBar } from "./SideBar";
+import { BerryFlow } from "./BerryFlow";
 
 export class Window {
   private _baseWindow: BaseWindow;
@@ -10,6 +11,7 @@ export class Window {
   private tabCounter: number = 0;
   private _topBar: TopBar;
   private _sideBar: SideBar;
+  private _berryFlow: BerryFlow;
 
   constructor() {
     // Create the browser window.
@@ -27,6 +29,7 @@ export class Window {
 
     this._topBar = new TopBar(this._baseWindow);
     this._sideBar = new SideBar(this._baseWindow);
+    this._berryFlow = new BerryFlow(this._baseWindow);
 
     // Set the window reference on the LLM client to avoid circular dependency
     this._sideBar.client.setWindow(this);
@@ -39,6 +42,7 @@ export class Window {
       this.updateTabBounds();
       this._topBar.updateBounds();
       this._sideBar.updateBounds();
+      this.updateBerryFLowBounds();
       // Notify renderer of resize through active tab
       const bounds = this._baseWindow.getBounds();
       if (this.activeTab) {
@@ -68,6 +72,19 @@ export class Window {
     });
   }
 
+  private updateBerryFLowBounds(): void {
+    const bounds = this._baseWindow.getBounds();
+    const sidebarWidth = this._sideBar.getIsVisible() ? 400 : 0;
+    if (this._berryFlow.getIsVisible()) {
+      this._berryFlow.view.setBounds({
+        x: 0,
+        y: 88,
+        width: bounds.width - sidebarWidth,
+        height: bounds.height - 88,
+      });
+    }
+  }
+
   // Getters
   get window(): BaseWindow {
     return this._baseWindow;
@@ -88,20 +105,18 @@ export class Window {
     return this.tabsMap.size;
   }
 
-  // Tab management methods
   createTab(url?: string): Tab {
     const tabId = `tab-${++this.tabCounter}`;
     const tab = new Tab(tabId, url);
 
-    // Add the tab's WebContentsView to the window
     this._baseWindow.contentView.addChildView(tab.view);
 
-    // Set the bounds to fill the window below the topbar and to the left of sidebar
     const bounds = this._baseWindow.getBounds();
+    const sidebarWidth = this._sideBar.getIsVisible() ? 400 : 0;
     tab.view.setBounds({
       x: 0,
       y: 88, // Start below the topbar
-      width: bounds.width - 400, // Subtract sidebar width
+      width: bounds.width - sidebarWidth, // Subtract sidebar width
       height: bounds.height - 88, // Subtract topbar height
     });
 
@@ -249,11 +264,16 @@ export class Window {
   updateAllBounds(): void {
     this.updateTabBounds();
     this._sideBar.updateBounds();
+    this._berryFlow.updateBounds();
   }
 
   // Getter for sidebar to access from main process
   get sidebar(): SideBar {
     return this._sideBar;
+  }
+
+  get berryFlow(): BerryFlow {
+    return this._berryFlow;
   }
 
   // Getter for topBar to access from main process
